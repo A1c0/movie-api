@@ -1,0 +1,15 @@
+{
+  "name": "movie-api",
+  "version": "1.0.0",
+  "main": "server.js",
+  "author": "Alexandre CONTASSOT <alexandrecontassot@hotmail.fr>",
+  "license": "MIT",
+  "dependencies": {
+    "bobda": "^0.2.1",
+    "fast-xml-parser": "^3.16.0",
+    "fastify": "^2.12.0",
+    "ramda": "^0.27.0",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.5"
+  }
+}
