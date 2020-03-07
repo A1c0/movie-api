@@ -3,6 +3,7 @@ const {multiPath} = require('bobda');
 const parser = require('fast-xml-parser');
 
 const R = require('ramda');
+const L = require('loggy-log')();
 
 const xmlParser = R.unary(parser.parse);
 
@@ -21,6 +22,7 @@ const reformatTitle = R.pipe(
 );
 
 const reformatDvdData = R.pipe(
+  L.trace('Reformat dvd : \n%fo'),
   R.path(['dvds', 'dvd']),
   multiPath([
     [['titres'], ['title']],
@@ -28,7 +30,8 @@ const reformatDvdData = R.pipe(
     [['annee'], ['year']]
   ]),
   R.pick(['media', 'cover', 'edition', 'editor', 'title', 'year']),
-  R.over(R.lensProp('title'), reformatTitle)
+  R.over(R.lensProp('title'), reformatTitle),
+  L.trace('Data reformatted : \n%fo')
 );
 
 const parseResponse = R.pipe(
@@ -37,11 +40,18 @@ const parseResponse = R.pipe(
 );
 
 const getDVD = R.pipe(
+  L.debug('Send request to DVDFr for gencode: %s'),
   R.concat('http://www.dvdfr.com/api/search.php?gencode='),
   R.objOf('uri'),
   R.assoc('method', 'GET'),
+  L.trace('request object : \n%fo'),
   rp,
-  R.andThen(parseResponse)
+  R.andThen(
+    R.pipe(
+      parseResponse,
+      L.trace('request response: \n%fo')
+    )
+  )
 );
 
-getDVD('3700301039316').then(x => console.log(x));
+module.exports = {getDVD};
