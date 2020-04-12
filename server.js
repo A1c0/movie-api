@@ -2,7 +2,8 @@ const fastify = require('fastify')();
 const L = require('loggy-log')();
 const fs = require('fs');
 const R = require('ramda');
-const {decycle} = require('json-decycle');
+
+const PORT = process.env.PORT || 5000;
 
 const pino = L.getPino();
 
@@ -26,13 +27,10 @@ fastify.get('/movies-DVD/:barcode', async (request, reply) => {
   pino.trace('request: \n%fo', request);
   reply.code(200).send(await getDVD(barcode));
 });
-
-const portExposed = 8080;
-
 // Run the server!
-fastify.listen(portExposed, err => {
+fastify.listen(PORT, err => {
   pino.info('\n%s', logo);
-  pino.info('the server is listen on port %d', portExposed);
+  pino.info('the server is listen on port %d', PORT);
   if (err) {
     fastify.log.error(err);
     process.exit(1);
