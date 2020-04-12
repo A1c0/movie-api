@@ -28,7 +28,7 @@ fastify.get('/movies-DVD/:barcode', async (request, reply) => {
   reply.code(200).send(await getDVD(barcode));
 });
 // Run the server!
-fastify.listen(PORT, err => {
+fastify.listen(PORT, '0.0.0.0', err => {
   pino.info('\n%s', logo);
   pino.info('the server is listen on port %d', PORT);
   if (err) {
