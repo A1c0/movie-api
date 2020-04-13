@@ -30,7 +30,7 @@ fastify.get('/hello', async (request, reply) => {
 });
 
 // Run the server!
-fastify.listen(PORT, err => {
+fastify.listen(PORT, '0.0.0.0', err => {
   pino.info('\n%s', logo);
   pino.info('the server is listen on port %d', PORT);
   if (err) {
