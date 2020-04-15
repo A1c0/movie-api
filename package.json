@@ -12,6 +12,11 @@
     "start:warn": "PINO_LEVEL=warn gulp server",
     "start:error": "PINO_LEVEL=error gulp server"
   },
+  "husky": {
+    "hooks": {
+      "commit-msg": "node .scripts/commit-msg.js -E HUSKY_GIT_PARAMS"
+    }
+  },
   "dependencies": {
     "bobda": "0.2.3",
     "fast-xml-parser": "^3.16.0",
