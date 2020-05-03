@@ -1,0 +1,70 @@
+{
+  "schema": {
+    "description": "Thanks to DVDFr PHP API, we can get all information about a provider",
+    "tags": [
+      "provider"
+    ],
+    "summary": "Get a provider by his barcode",
+    "params": {
+      "type": "object",
+      "properties": {
+        "barcode": {
+          "type": "string",
+          "description": "The barcode of the provider"
+        }
+      }
+    },
+    "response": {
+      "200": {
+        "description": "Successful response",
+        "type": "object",
+        "properties": {
+          "media": {
+            "description": "DEFAULT_VALUE",
+            "type": "string"
+          },
+          "cover": {
+            "description": "DEFAULT_VALUE",
+            "type": "string"
+          },
+          "edition": {
+            "description": "DEFAULT_VALUE",
+            "type": "string"
+          },
+          "editor": {
+            "description": "DEFAULT_VALUE",
+            "type": "string"
+          },
+          "title": {
+            "type": "object",
+            "properties": {
+              "fr": {
+                "description": "DEFAULT_VALUE",
+                "type": "string"
+              },
+              "vo": {
+                "description": "DEFAULT_VALUE",
+                "type": "string"
+              }
+            }
+          },
+          "year": {
+            "description": "DEFAULT_VALUE",
+            "type": "number"
+          }
+        },
+        "example": {
+          "media": "DVD",
+          "cover": "https://www.dvdfr.com/images/dvd/covers/200x280/z/3556/-parrain_coffret.0.jpg",
+          "edition": "",
+          "editor": "Paramount Pictures",
+          "title": {
+            "fr": "Le Parrain - Trilogie",
+            "vo": "The Godfather, The Godfather Part II + The Godfather Part II"
+          },
+          "year": 1972
+        }
+      }
+    }
+  }
+}

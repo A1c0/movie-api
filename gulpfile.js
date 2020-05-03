@@ -15,6 +15,8 @@ const autoReload = async () => {
   };
 
   watch('*.js', spawnChildren);
+  watch('swagger/**/*.js*', spawnChildren);
+  watch('app/**/*.js*', spawnChildren);
   await spawnChildren();
 };
 

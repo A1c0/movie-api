@@ -1,0 +1,42 @@
+{
+  "routePrefix": "NEED_TO_BE_DEFINED",
+  "swagger": {
+    "info": {
+      "title": "Lovie API",
+      "description": "Lovie main api",
+      "version": "0.0.1"
+    },
+    "host": "NEED_TO_BE_DEFINED",
+    "schemes": [
+      "http"
+    ],
+    "consumes": [
+      "application/json"
+    ],
+    "produces": [
+      "application/json"
+    ],
+    "tags": [
+      {
+        "name": "user",
+        "description": "User related end-points"
+      },
+      {
+        "name": "movie",
+        "description": "Movie related end-points"
+      },
+      {
+        "name": "provider",
+        "description": "Provider related end-points"
+      }
+    ],
+    "securityDefinitions": {
+      "apiKey": {
+        "type": "apiKey",
+        "name": "apiKey",
+        "in": "header"
+      }
+    }
+  },
+  "exposeRoute": true
+}

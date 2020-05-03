@@ -1,6 +1,11 @@
-const rp = require('request-promise');
+const bent = require('bent');
 const {multiPath} = require('bobda');
 const parser = require('fast-xml-parser');
+
+const getDvdByDVDFr = bent(
+  'https://www.dvdfr.com/api/search.php?gencode=',
+  'string'
+);
 
 const R = require('ramda');
 const L = require('loggy-log')();
@@ -41,17 +46,8 @@ const parseResponse = R.pipe(
 
 const getDVD = R.pipe(
   L.debug('Send request to DVDFr for gencode: %s'),
-  R.concat('http://www.dvdfr.com/api/search.php?gencode='),
-  R.objOf('uri'),
-  R.assoc('method', 'GET'),
-  L.trace('request object : \n%fo'),
-  rp,
-  R.andThen(
-    R.pipe(
-      parseResponse,
-      L.trace('request response: \n%fo')
-    )
-  )
+  getDvdByDVDFr,
+  R.andThen(parseResponse)
 );
 
 module.exports = {getDVD};
