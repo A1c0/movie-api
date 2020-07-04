@@ -1,5 +1,5 @@
 const R = require('ramda');
-const L = require('loggy-log')();
+const L = require('loggy-log')(1);
 
 const pino = L.getPino();
 
@@ -11,7 +11,7 @@ class ApiError extends Error {
   }
 
   toString() {
-    return `${this.name}: ${this.message}\n${this.stack || ''}`;
+    return `${this.name}: ${this.message}`;
   }
 }
 

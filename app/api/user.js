@@ -10,7 +10,10 @@ const getUserDB = R.bind(model.user.findOne, model.user);
 
 const createUser = createUserDB;
 
-const dbMetadata = ['id', 'createdAt', 'updatedAt'];
+const updateUserDB = R.invoker(1, 'update');
+const deleteUserDB = R.invoker(0, 'destroy');
+
+const dbMetadata = ['createdAt', 'updatedAt'];
 
 const getAllUsers = R.pipe(
   R.always({
@@ -32,4 +35,15 @@ const getUser = userId =>
     )
   )(userId);
 
-module.exports = {createUser, getAllUsers, getUser};
+const setUser = (userId, objToReplace) =>
+  R.pipe(
+    getUser,
+    R.andThen(updateUserDB(objToReplace))
+  )(userId);
+
+const deleteUser = R.pipe(
+  getUser,
+  R.andThen(deleteUserDB)
+);
+
+module.exports = {createUser, getAllUsers, getUser, setUser, deleteUser};

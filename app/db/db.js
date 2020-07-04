@@ -3,19 +3,20 @@ const L = require('loggy-log')('sequelize');
 
 const pino = L.getPino();
 const sequelize = new Sequelize('postgres://postgres@localhost:5432/lovie', {
-  logging: pino.trace
+  logging: pino.trace,
 });
+
 sequelize
   .authenticate()
   .then(() => {})
-  .catch(err => {
+  .catch((err) => {
     console.error('Unable to connect to the database:', err);
   });
 
 const sequelizeOption = {
   sequelize,
   underscored: true,
-  timestamps: true
+  timestamps: true,
 };
 
 // Create DB Entity
@@ -26,33 +27,33 @@ User.init(
     // attributes
     firstName: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     lastName: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     userName: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true
+      unique: true,
     },
     password: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
       validate: {
-        isEmail: true
-      }
+        isEmail: true,
+      },
     },
     imageUrl: {
       type: DataTypes.STRING,
-      allowNull: true
-    }
+      allowNull: true,
+    },
   },
   sequelizeOption
 );
@@ -63,29 +64,37 @@ Movie.init(
     // attributes
     title: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      unique: true,
     },
-    titleVo: {
+    originalTitle: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     actors: {
       type: DataTypes.ARRAY(DataTypes.STRING),
-      allowNull: false,
-      unique: true
+      allowNull: true,
     },
     director: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
-    type: {
+    justwatchId: {
       type: DataTypes.STRING,
-      allowNull: true
+      unique: true,
+      validate: {
+        is: /\d*/i,
+      },
+      allowNull: true,
+    },
+    year: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
     },
     imageUrl: {
       type: DataTypes.ARRAY(DataTypes.STRING),
-      allowNull: true
-    }
+      allowNull: true,
+    },
   },
   sequelizeOption
 );
@@ -94,22 +103,29 @@ class Provider extends Model {}
 Provider.init(
   {
     // attributes
+    barcode: {
+      type: DataTypes.STRING,
+      validate: {
+        is: /\d*/i,
+      },
+      primaryKey: true,
+    },
     media: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     editor: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     },
     name: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     imageUrl: {
       type: DataTypes.ARRAY(DataTypes.STRING),
-      allowNull: true
-    }
+      allowNull: true,
+    },
   },
   sequelizeOption
 );
@@ -119,7 +135,7 @@ Provider.init(
 const sequelizeOption2 = {
   sequelize,
   underscored: true,
-  timestamps: false
+  timestamps: false,
 };
 
 class Relation extends Model {}
@@ -134,13 +150,13 @@ ProviderMovie.init({}, sequelizeOption2);
 User.belongsToMany(User, {
   as: 'target',
   foreignKey: 'target_user_id',
-  through: Relation
+  through: Relation,
 });
 
 User.belongsToMany(User, {
   as: 'source',
   foreignKey: 'source_user_id',
-  through: Relation
+  through: Relation,
 });
 
 User.belongsToMany(Provider, {through: UserProvider});
@@ -149,13 +165,13 @@ Provider.belongsToMany(User, {through: UserProvider});
 Provider.belongsToMany(Movie, {through: ProviderMovie});
 Movie.belongsToMany(Provider, {through: ProviderMovie});
 
-const init = async () => {
-  await User.sync();
-  await Movie.sync();
-  await Provider.sync();
-  await Relation.sync();
-  await UserProvider.sync();
-  await ProviderMovie.sync();
+const init = async (force = false) => {
+  await User.sync({force});
+  await Movie.sync({force});
+  await Provider.sync({force});
+  await Relation.sync({force});
+  await UserProvider.sync({force});
+  await ProviderMovie.sync({force});
 };
 
 module.exports = {
@@ -167,6 +183,24 @@ module.exports = {
     provider: Provider,
     relation: Relation,
     userProvider: UserProvider,
-    providerMovie: ProviderMovie
-  }
+    providerMovie: ProviderMovie,
+  },
 };
+
+const test = async () => {
+  await init();
+  const u1 = await User.findByPk(1, {include: Provider});
+  const p1 = await Provider.findByPk('3344428015565');
+  const p2 = await Provider.findByPk('3344328015165');
+  // await u1.addProvider([p2]);
+  // const u1 = await User.create({
+  //   firstName: 'Lorie',
+  //   lastName: 'Bibabou',
+  //   userName: 'Loribibabou',
+  //   password: 'password',
+  //   email: 'lorieBibabou@gygy.com',
+  //   imageUrl: null,
+  // });
+};
+
+// test();
