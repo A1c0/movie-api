@@ -13,7 +13,7 @@ const {
   setUser,
   deleteUser,
 } = require('./app/api/user');
-const {init} = require('./app/db/db');
+const {sequelize} = require('./app/db/index');
 const {parseEachProperty} = require('./app/validator/validator');
 
 const APP_HOST = process.env.APP_HOST || 'localhost';
@@ -104,7 +104,7 @@ fastify.ready((err) => {
 
 // Run the server!
 fastify.listen(APP_PORT, APP_HOST, async (err) => {
-  await init();
+  sequelize.sync({force: true});
   pino.info('\n%s', logo);
   pino.info('the server is listen on port %d', APP_PORT);
   pino.info(

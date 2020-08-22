@@ -1,5 +1,5 @@
 const bent = require('bent');
-const {multiPath, promiseMap} = require('bobda');
+const {multiPath, promiseMap, promiseProps} = require('bobda');
 const parser = require('fast-xml-parser');
 const {parseAsciiHtml} = require('../../lib/html-ascii');
 const R = require('ramda');
@@ -38,26 +38,23 @@ const reformatMovie = R.applySpec({
   director: getDirector,
   year: R.prop('original_release_year'),
   justwatchId: R.prop('id'),
-  imageUrl: computePoster
+  imageUrl: computePoster,
 });
 
 const getJustWatchMovieByTitle = R.pipe(
   R.path(['items', 0, 'id']),
-  R.curry(justwatch.getTitle)('movie')
+  R.curry(R.bind(justwatch.getTitle, justwatch))('movie')
 );
 
 const getMovie = R.pipe(
-  R.unary(justwatch.search),
+  R.unary(R.bind(justwatch.search, justwatch)),
   R.andThen(getJustWatchMovieByTitle),
   R.andThen(reformatMovie)
 );
 
 const xmlParser = R.unary(parser.parse);
 
-const joinFrVo = R.pipe(
-  R.props(['fr', 'vo']),
-  R.join(';')
-);
+const joinFrVo = R.pipe(R.props(['fr', 'vo']), R.join(';'));
 
 const collectionKeyWords = ['coffret', 'trilogie', 'collection', 'intégrale'];
 
@@ -66,15 +63,9 @@ const containCollectionKeyWords = R.pipe(
   R.anyPass(R.map(R.includes)(collectionKeyWords))
 );
 
-const isCollection = R.pipe(
-  joinFrVo,
-  containCollectionKeyWords
-);
+const isCollection = R.pipe(joinFrVo, containCollectionKeyWords);
 
-const isCollectionTreatable = R.pipe(
-  joinFrVo,
-  R.includes('+')
-);
+const isCollectionTreatable = R.pipe(joinFrVo, R.includes('+'));
 
 const getMoviesTitleFromCollection = R.pipe(
   R.values,
@@ -87,30 +78,17 @@ const getMoviesTitleFromCollection = R.pipe(
 const getMoviesTitle = R.cond([
   [
     R.allPass([isCollection, isCollectionTreatable]),
-    getMoviesTitleFromCollection
+    getMoviesTitleFromCollection,
   ],
   [isCollection, R.always([])],
-  [
-    R.T,
-    R.pipe(
-      R.prop('fr'),
-      R.of
-    )
-  ]
+  [R.T, R.pipe(R.prop('fr'), R.of)],
 ]);
 
-const getMovies = R.pipe(
-  getMoviesTitle,
-  R.reject(R.anyPass([R.isNil, R.isEmpty])),
-  promiseMap(getMovie)
-);
+const getMovies = promiseMap(getMovie);
 
 const getProviderName = R.ifElse(
   isCollection,
-  R.pipe(
-    R.values,
-    R.find(containCollectionKeyWords)
-  ),
+  R.pipe(R.values, R.find(containCollectionKeyWords)),
   R.prop('fr')
 );
 
@@ -119,20 +97,20 @@ const reformatDvdData = R.pipe(
   multiPath([
     [['titres'], ['movies']],
     [['editeur'], ['editor']],
-    [['annee'], ['year']]
+    [['annee'], ['year']],
   ]),
   R.pick(['media', 'cover', 'editor', 'movies', 'year']),
   R.over(R.lens(R.prop('movies'), R.assoc('name')), getProviderName),
   R.over(R.lensProp('movies'), getMoviesTitle)
 );
 
-const parseEachHTMLAttribute = value =>
+const parseEachHTMLAttribute = (value) =>
   R.pipe(
     R.cond([
       [R.is(String), parseAsciiHtml],
       [R.is(Array), R.map(parseEachHTMLAttribute)],
       [R.is(Object), R.mapObjIndexed(parseEachHTMLAttribute)],
-      [R.T, R.identity]
+      [R.T, R.identity],
     ])
   )(value);
 
@@ -144,14 +122,17 @@ const parseResponse = R.pipe(
   L.trace('Data reformatted : \n%fo')
 );
 
-const getDVD = barcode =>
+const getDVD = (barcode) =>
   R.pipe(
     L.debug('Send request to DVDFr for barcode: %s'),
     getDvdByDVDFr,
     R.andThen(parseResponse),
+    R.andThen(R.pipe(R.over(R.lensProp('movies'), getMovies), promiseProps)),
     R.andThen(R.assoc('barcode', barcode))
   )(barcode);
 
 module.exports = {getDVD};
 
-// getDVD('3344428015565').then(L.debug('result: %fo'));
+// getMovie('Back to the Future').then(L.debug('result: %fo'));
+
+// getDVD('3259190302198').then(L.debug('result: %fo'));

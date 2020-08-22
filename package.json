@@ -34,6 +34,8 @@
     "txml": "^3.1.2"
   },
   "devDependencies": {
-    "node-emoji": "^1.10.0"
+    "node-emoji": "^1.10.0",
+    "prettier": "^2.0.5",
+    "xo": "^0.33.0"
   }
 }

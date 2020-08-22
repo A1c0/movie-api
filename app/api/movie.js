@@ -1,20 +1,18 @@
 const R = require('ramda');
 const L = require('loggy-log')();
 
-const {model, init} = require('../db/db');
+const {Movie} = require('../db/index');
 const {throwNotFoundError} = require('./error');
+const {tryCatchPromise} = require('../../lib/ramda-utils');
+const {formatNotFountMessage, dbMetadata} = require('../../lib/db-utils');
 
-const createMovieDB = R.bind(model.movie.create, model.movie);
-
-const getMoviesDB = R.bind(model.movie.findAll, model.movie);
-const getMovieDB = R.bind(model.movie.findOne, model.movie);
-
+const createMovieDB = R.bind(Movie.create, Movie);
+const getMoviesDB = R.bind(Movie.findAll, Movie);
+const getMovieDB = R.bind(Movie.findOne, Movie);
 const createMovie = createMovieDB;
 
 const updateMovieDB = R.invoker(1, 'update');
 const deleteMovieDB = R.invoker(0, 'destroy');
-
-const dbMetadata = ['createdAt', 'updatedAt'];
 
 const getAllMovies = (userId) =>
   R.pipe(
@@ -25,12 +23,6 @@ const getAllMovies = (userId) =>
     getMoviesDB,
     R.andThen(R.when(R.isEmpty, throwNotFoundError('There are no movies')))
   )(userId);
-
-const formatNotFountMessage = R.pipe(
-  R.toPairs,
-  R.map(R.join(' ')),
-  R.join(' and ')
-);
 
 const getMovie = (movieObjProp) =>
   R.pipe(
@@ -43,7 +35,7 @@ const getMovie = (movieObjProp) =>
       R.when(
         R.isNil,
         throwNotFoundError(
-          `There are no movie with ${formatNotFountMessage(movieObjProp)}`
+          `There is no movie with ${formatNotFountMessage(movieObjProp)}`
         )
       )
     )
@@ -53,14 +45,6 @@ const setMovie = (movieId, objToReplace) =>
   R.pipe(getMovie, R.andThen(updateMovieDB(objToReplace)))(movieId);
 
 const deleteMovie = R.pipe(getMovie, R.andThen(deleteMovieDB));
-
-const tryCatchPromise = R.curry(async (fnTry, fnCatch, value) => {
-  try {
-    return await Promise.resolve(fnTry(value));
-  } catch (e) {
-    return await Promise.resolve(fnCatch(value));
-  }
-});
 
 const tryCreateOrGetMovie = tryCatchPromise(
   createMovie,
@@ -77,8 +61,6 @@ module.exports = {
 };
 
 const test = async () => {
-  await init();
-
   const obj = {
     title: 'title',
     originalTitle: 'originalTitle',
